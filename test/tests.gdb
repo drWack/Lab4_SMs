@@ -27,23 +27,39 @@ echo ======================================================\n
 echo Running all tests..."\n\n
 
 # Test sequence from waitA0 to 
-test "start from seven, increment, decrement, reset"
+test "input wrong code \"#,x\" door not open" 
 set state = Start
 setPINA 0x00
+expectPORTB 0x00
 continue 2
-expectPORTC 0x07
+setPINA 0x04
+continue 2
+expectPORTC 0x02
+setPINA 0x00
 setPINA 0x01
 continue 2
-setPINA 0x00
-continue 2
-expectPORTC 0x08
-setPINA 0x02
-continue 2
-expectPORTC 0x07
-setPINA 0x03
-continue 2
-expectPORTC 0x00
+expectPORTC 0x01
+expectPORTB 0x00
 checkResult
+test "input right code, door open, append wrong code, close"
+set state = Start
+setPINA 0x00
+expectPORTB 0x00
+continue 2
+setPINA 0x04
+continue 2
+setPINA 0x02
+continue 2 
+expectPORTC 0x03 
+continue 2
+setPINA 0x00
+expectPORTC 0x04 
+continue 2
+setPINA 0x01
+expectPORTC 0x01
+checkResult
+test "input right code, door open, close from inside"
+set state = Start
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed
 eval "shell echo Passed %d/%d tests.\n",$passed,$tests

@@ -1,7 +1,13 @@
-Breakpoint 1 at 0x37e: file source/main.c, line 59.
+Breakpoint 1 at 0x3a4: file source/main.c, line 68.
 Note: automatically using hardware breakpoints for read-only addresses.
 ======================================================
 Running all tests..."
 
-"start from seven, increment, decrement, reset"...======================================================
+"input wrong code "#,x" door not open"..."input right code, door open, append wrong code, close"...
+	Expected 0x04 
+	PORTC '0x800028:	0x03
+
+	Expected 0x01 
+	PORTC '0x800028:	0x04
+"input right code, door open, close from inside"...======================================================
 Quitting: Remote doesn't know how to detach

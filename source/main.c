@@ -12,36 +12,45 @@
 #include "simAVRHeader.h"
 #endif
 //#include "RIMS.h"
-enum States{Start,idle,inc,dec,reset}state;
-unsigned char C;
+enum States{Start,idle,active,preOpen,open}state;
+unsigned char code;
+char getX()
+{
+return PINA&0x01;
+}
+char getY()
+{
+return (PINA>>1)&0x01;
+}
+char getPound(){
+return (PINA>>2)&0x01;
+}
+char getInside(){
+return (PINA>>7)&0x01;
+}
 void Tick(){
 	switch(state)//transitions 
 	{
 	case Start: state = idle; break;
-	case idle:
-		if((PINA&0x01)==0x01 && (PINA&0x02)==0x02)
-		{state = reset;}
-		else if((PINA&0x01)==0x01) {state =inc; if(C<9){C++;}}
-		else if((PINA&0x02)==0x02){state = dec; if(C>0){C--;}}break;//single increment/decrement solved with the power of Mealy Machines
-	case inc:
-		if((PINA&0x01)==0x01 && (PINA&0x02) ==0x02)
-		{state = reset;}
-		if((PINA&0x01) != 0x01){state = idle;} break;
-	case dec:
-		if((PINA&0x01)==0x01 && (PINA&0X02)==0x02)
-		{state = reset;}
-		if((PINA&0x02) != 0x02){state = idle;}break;
-	case reset: state = idle; break;
+	case idle: if(getPound() ==0x01){state = active;}break;
+	case active: 
+		if(getX()==0x01){state = idle;}
+		else if(getInside()==0x01){state = idle;}
+		else if(getY() ==0x01 && getPound() ==0x00){state = preOpen;}break;	
+	case preOpen: if(getY()==0x00){state = open;}
+			else if(getX()==0x01 || getPound() ==0x01 || getInside() == 0x01){state =idle;} break;
+	case open: if(getX()==0x01 || getY() == 0x01 || getInside() == 0x01){state = idle;}
+			if(getPound() == 0x01){state = active;}break;
 	default: state = Start; break;
 	}
 
 	switch(state) //State actions
 	{
 	case Start: break;
-	case idle: PORTC = C; break;
-	case inc:  PORTC = C; break;
-	case dec:  PORTC = C; break;
-	case reset: C = 0; PORTC = C;break;
+	case idle: PORTB = 0x00; PORTC = state; break;
+	case active:  PORTB = 0x00; PORTC = state; break;
+	case preOpen:  PORTB = 0x01;PORTC = state; break;
+	case open: PORTB = 0x01; PORTC = state;break;
 	default: break;
 	
 	}
@@ -53,8 +62,8 @@ int main(void) {
     /* Insert DDR and PORT initializations */
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRC = 0xFF; PORTC = 0x00;
+	DDRB = 0xFF; PORTB = 0x00;
 	state = Start;
-	C = 7;
     /* Insert your solution below */
     while (1) {
 	Tick();
